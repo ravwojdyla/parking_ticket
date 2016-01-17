@@ -1,0 +1,12 @@
+*.class
+*.project
+*.classpath
+*.cache
+/bin/
+.idea*
+/RUNNING_PID
+/logs/
+/project/*-shim.sbt
+/project/project/
+/project/target/
+/target/
