@@ -21,23 +21,17 @@ object JsonProtocols extends DefaultJsonProtocol {
 trait ParkingTicketsActions {
 
   def getProvinceInfractionSummary(province: String): InfractionSummary = {
-    db.withSession { implicit session =>
-      val infractionByCode = for {
-        ((code, desc), c) <- table.filter(_.province === province).groupBy(col => (col.code, col.description))
-      } yield (code, desc, c.length, c.map(_.fineAmount).sum)
-
-      val topTenInfractions = infractionByCode.sortBy(_._3.desc).take(10).list()
-      val infractions = topTenInfractions.map {
-        case ((code, desc, count, amount)) => Infraction(code, desc, count, amount.get)
-      }
-      InfractionSummary(province, infractions)
-    }
+    getInfractionSummary(_.province === province)
   }
 
   def getAllInfractionSummary(): InfractionSummary =  {
+    getInfractionSummary(_ => true)
+  }
+
+  def getInfractionSummary(f: ParkingTickets => Column[Boolean]) = {
     db.withSession { implicit session =>
       val infractionByCode = for {
-        ((code, desc), c) <- table.groupBy(col => (col.code, col.description))
+        ((code, desc), c) <- table.filter(f).groupBy(col => (col.code, col.description))
       } yield (code, desc, c.length, c.map(_.fineAmount).sum)
 
       val topTenInfractions = infractionByCode.sortBy(_._3.desc).take(10).list()
@@ -49,23 +43,17 @@ trait ParkingTicketsActions {
   }
 
   def getProvinceFineSummary(province: String): FineSummary = {
-    db.withSession { implicit session =>
-      val fineByMonth = for {
-        (month, c) <- table.filter(_.province === province).groupBy(_.month)
-      } yield (month, c.length, c.map(_.fineAmount).sum)
-
-      val orderByMonth = fineByMonth.sortBy(_._1.asc).list()
-      val fines = orderByMonth.map {
-        case ((month, count, amount)) => MonthlyFine(month, count, amount.get)
-      }
-      FineSummary(province, fines)
-    }
+    getAllFineSummary(_.province === province)
   }
 
   def getAllFineSummary(): FineSummary = {
+    getAllFineSummary(_ => true)
+  }
+
+  def getAllFineSummary(f: ParkingTickets => Column[Boolean]): FineSummary = {
     db.withSession { implicit session =>
       val fineByMonth = for {
-        (month, c) <- table.groupBy(_.month)
+        (month, c) <- table.filter(f).groupBy(_.month)
       } yield (month, c.length, c.map(_.fineAmount).sum)
 
       val orderByMonth = fineByMonth.sortBy(_._1.asc).list()
