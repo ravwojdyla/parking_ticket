@@ -19,7 +19,7 @@ trait ParkingTicketService extends HttpService with ParkingTicketsActions {
       get {
         respondWithMediaType(`application/json`) {
           complete {
-            getAllInfractionSummary().toJson.toString()
+            getAllInfractionSummary().toJson.prettyPrint
           }
         }
       }
@@ -28,7 +28,7 @@ trait ParkingTicketService extends HttpService with ParkingTicketsActions {
     get {
       respondWithMediaType(`application/json`) {
         complete {
-          getProvinceInfractionSummary(province).toJson.toString()
+          getProvinceInfractionSummary(province).toJson.prettyPrint
         }
       }
     }
@@ -37,7 +37,7 @@ trait ParkingTicketService extends HttpService with ParkingTicketsActions {
     get {
       respondWithMediaType(`application/json`) {
         complete {
-          getAllFineSummary().toJson.toString()
+          getAllFineSummary().toJson.prettyPrint
         }
       }
     }
@@ -46,7 +46,7 @@ trait ParkingTicketService extends HttpService with ParkingTicketsActions {
     get {
       respondWithMediaType(`application/json`) {
         complete {
-          getProvinceFineSummary(province).toJson.toString()
+          getProvinceFineSummary(province).toJson.prettyPrint
         }
       }
     }
