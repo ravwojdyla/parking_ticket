@@ -23,12 +23,12 @@ trait ParkingTicketsActions {
   def getProvinceInfractionSummary(province: String): InfractionSummary = {
     db.withSession { implicit session =>
       val infractionByCode = for {
-        (code, c) <- table.filter(_.province === province).groupBy(_.code)
-      } yield (code, c.length, c.map(_.fineAmount).sum)
+        ((code, desc), c) <- table.filter(_.province === province).groupBy(col => (col.code, col.description))
+      } yield (code, desc, c.length, c.map(_.fineAmount).sum)
 
-      val topTenInfractions = infractionByCode.sortBy(_._2.desc).take(10).list()
+      val topTenInfractions = infractionByCode.sortBy(_._3.desc).take(10).list()
       val infractions = topTenInfractions.map {
-        case ((code, count, amount)) => Infraction(code, "desc", count, amount.get)
+        case ((code, desc, count, amount)) => Infraction(code, desc, count, amount.get)
       }
       InfractionSummary(province, infractions)
     }
@@ -37,12 +37,12 @@ trait ParkingTicketsActions {
   def getAllInfractionSummary(): InfractionSummary =  {
     db.withSession { implicit session =>
       val infractionByCode = for {
-        (code, c) <- table.groupBy(_.code)
-      } yield (code, c.length, c.map(_.fineAmount).sum)
+        ((code, desc), c) <- table.groupBy(col => (col.code, col.description))
+      } yield (code, desc, c.length, c.map(_.fineAmount).sum)
 
-      val topTenInfractions = infractionByCode.sortBy(_._2.desc).take(10).list()
+      val topTenInfractions = infractionByCode.sortBy(_._3.desc).take(10).list()
       val infractions = topTenInfractions.map {
-        case ((code, count, amount)) => Infraction(code, "desc", count, amount.get)
+        case ((code, desc, count, amount)) => Infraction(code, desc, count, amount.get)
       }
       InfractionSummary("all", infractions)
     }
